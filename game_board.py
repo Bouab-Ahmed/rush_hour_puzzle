@@ -156,8 +156,6 @@ def main():
     # load images
     prev_img = pygame.image.load("./prev_btn.jpg").convert_alpha()
     next_img = pygame.image.load("./start_btn.jpg").convert_alpha()
-    congrats_img = pygame.image.load("./congrats.jpg").convert_alpha()
-    congrats = congrats_img.get_rect(left=0, top=0)
 
     # create button instances
     prev_btn = Button(150, 700, prev_img, 0.5)
