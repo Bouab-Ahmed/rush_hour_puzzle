@@ -143,75 +143,22 @@ class RushHourPuzzle:
             print("successor walls: ", successor.walls)
             print("successor board: ", successor.board)
 
-    # calcualte the distance from the x car to the exit
-    def distance_h(state):
-        distance = 0
+        """ First heuristic: Distance from target vehicle to the exit """
+
+    def heuristic1(state):
         for vehicle in state.vehicles:
             if vehicle["id"] == "X":
-                distance += abs(vehicle["x"] - (state.board_width - 2))
-                distance += abs(vehicle["y"] - state.board_height // 2)
-            else:
-                distance += abs(vehicle["x"] - (state.board_width - 1))
-                distance += abs(vehicle["y"] - (state.board_height // 2))
+                return state.board_width - 2 - vehicle["x"]
 
-        return distance
+    """ Second heuristic: number of vehicles that block the way to the exit """
 
-    # calculate the number of blocking cars
-    def blocking_cars(state):
-        blocking_cars = 0
+    def heuristic2(state):
         for vehicle in state.vehicles:
             if vehicle["id"] == "X":
-                x_position = vehicle["x"]
-                y_position = vehicle["y"]
-                for i in range(x_position + 2, state.board_width):
-                    if state.board[y_position][i] != " ":
-                        blocking_cars += 1
-                return blocking_cars
-
-    def manhattan_distance_heuristic_v3(state):
-        distance = 0
-        for vehicle in state.vehicles:
-            if vehicle["id"] == "X":
-                distance += abs(vehicle["x"] - (state.board_width - 2))
-                distance += abs(vehicle["y"] - (state.board_height // 2))
-
-        # Penalize vehicles that are blocking the exit
-        for vehicle in state.vehicles:
-            if (
-                vehicle["id"] != "X"
-                and vehicle["y"] == state.board_height // 2
-                and vehicle["x"] >= state.board_width - 2
-            ):
-                distance += 1
-
-        # Penalize vehicles that are blocking other vehicles
-        for vehicle in state.vehicles:
-            blocking_vehicles = 0
-            for other_vehicle in state.vehicles:
-                if (
-                    other_vehicle["id"] != vehicle["id"]
-                    and (
-                        other_vehicle["x"] == vehicle["x"]
-                        and other_vehicle["y"] > vehicle["y"]
-                    )
-                    or (
-                        other_vehicle["x"] > vehicle["x"]
-                        and other_vehicle["y"] == vehicle["y"]
-                    )
-                ):
-                    blocking_vehicles += 1
-
-            distance += blocking_vehicles
-
-        # Penalize vehicles that are far away from the exit
-        exit_distance = 0
-        for vehicle in state.vehicles:
-            exit_distance += abs(vehicle["x"] - (state.board_width - 2))
-            exit_distance += abs(vehicle["y"] - (state.board_height // 2))
-
-        distance += exit_distance
-
-        return distance
+                unique_vehicles = set(state.board[vehicle["y"]][vehicle["x"] :])
+                if " " in unique_vehicles:
+                    return state.heuristic1() + len(unique_vehicles) - 2
+                return state.heuristic1() + len(unique_vehicles) - 1
 
     @staticmethod
     def a_star(start, depth_limit=100):
@@ -254,9 +201,9 @@ class RushHourPuzzle:
             # Generate the successors of the current node
             for action, successor in current.state.successorFunction():
                 # Create the successor node
-                h = RushHourPuzzle.manhattan_distance_heuristic_v3(successor)
-                bc = RushHourPuzzle.blocking_cars(successor)
-                successor_node = Node(successor, current, action, 1, h)
+                h = RushHourPuzzle.heuristic1(successor)
+                bc = RushHourPuzzle.heuristic2(successor)
+                successor_node = Node(successor, current, action, 1, h + bc)
 
                 # Check if the successor is in the CLOSED list and not in the OPEN list
                 if (
