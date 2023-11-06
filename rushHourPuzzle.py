@@ -134,15 +134,6 @@ class RushHourPuzzle:
                     succs.append(("{}:D".format(vehicle["id"]), successor))
         return succs
 
-    # print the successors of the current state
-    def print_successors(self):
-        for action, successor in self.successorFunction():
-            print("action: ", action)
-            print("successor: ", successor.board)
-            print("successor vehicles: ", successor.vehicles)
-            print("successor walls: ", successor.walls)
-            print("successor board: ", successor.board)
-
         """ First heuristic: Distance from target vehicle to the exit """
 
     def heuristic1(state):
@@ -156,12 +147,14 @@ class RushHourPuzzle:
         for vehicle in state.vehicles:
             if vehicle["id"] == "X":
                 unique_vehicles = set(state.board[vehicle["y"]][vehicle["x"] :])
+                # print(f"unique vehicles: {unique_vehicles}")
+                # print()
                 if " " in unique_vehicles:
                     return state.heuristic1() + len(unique_vehicles) - 2
                 return state.heuristic1() + len(unique_vehicles) - 1
 
     @staticmethod
-    def a_star(start, depth_limit=100):
+    def a_star(start, depth_limit=2):
         # Create the initial node
         initial_node = Node(start, None, "", 1, 0)
         initial_node.g = initial_node.h = initial_node.f = 0
@@ -179,7 +172,6 @@ class RushHourPuzzle:
         running = True
         while not open.empty() and running:
             print(f"*** Step {step} ***")
-            step += 1
             if open.empty():
                 print("No solution found.")
                 return None, step
@@ -220,3 +212,10 @@ class RushHourPuzzle:
                                 open.add(successor_node)
                                 break
             step += 1
+
+
+# initial_state = RushHourPuzzle("./levels/1.csv")
+
+# solution, steps = RushHourPuzzle.a_star(initial_state)
+
+# print(f"Solution: {solution}")
