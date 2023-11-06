@@ -143,23 +143,33 @@ def drawVehicles(screen, w, h, state):
         pygame.draw.rect(screen, color, (x + 7, y + 7, width, height), 0, 10)
 
 
-def main():
+# def draw_menu( puzzle_file="./puzzles/puzzle1.csv"):
+#     # Draw the updated state
+#     screen.fill((0, 255, 0))
+
+
+def draw_level(screen, puzzle_file):
     pygame.init()
     clock = pygame.time.Clock()
 
-    # Load the puzzle
-    w, h, states, steps = loadPuzzle("./levels/1.csv")
+    # screen = pygame.display.set_mode((700, 800))
 
-    screen = pygame.display.set_mode((int(w) * 100 + 100, int(h) * 100 + 200))
+    # draw_menu(screen)
+
+    # Load the puzzle
+    w, h, states, _ = loadPuzzle(puzzle_file)
+
     pygame.display.set_caption("Rush Hour Puzzle")
 
     # load images
-    prev_img = pygame.image.load("./prev_btn.jpg").convert_alpha()
-    next_img = pygame.image.load("./start_btn.jpg").convert_alpha()
+    prev_img = pygame.image.load("./prev_img.png").convert_alpha()
+    next_img = pygame.image.load("./next_img.png").convert_alpha()
+    quit_img = pygame.image.load("./button_quit.png").convert_alpha()
 
     # create button instances
-    prev_btn = Button(150, 700, prev_img, 0.5)
-    next_btn = Button(400, 700, next_img, 0.5)
+    prev_btn = Button(450, 670, prev_img, 1)
+    quit_btn = Button(70, 670, quit_img, 1.1)
+    next_btn = Button(550, 670, next_img, 1)
 
     # Create a variable to track the current state index
     state_index = 0
@@ -172,6 +182,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
         screen.fill((220, 220, 220))
         drawGrid(screen, w, h)
 
@@ -188,6 +199,9 @@ def main():
             if state_index >= len(states):
                 state_index = 0
 
+        if quit_btn.draw(screen):
+            running = False
+
         # Make sure the state index is within bounds
         state_index = state_index % len(states)
 
@@ -196,6 +210,47 @@ def main():
 
         pygame.display.update()
         clock.tick(60)
+
+
+def draw_menu(screen):
+    pygame.font.init()
+    font = pygame.font.SysFont(None, 70)
+    text = font.render("Rush Hour", False, (0, 0, 0))
+    text_rect = text.get_rect(center=(350, 70))
+    screen.blit(text, (text_rect.x, text_rect.y))
+
+    font = pygame.font.SysFont(None, 50)
+    text = font.render("Select a level :", False, (0, 0, 0))
+    text_rect = text.get_rect(center=(350, 160))
+    screen.blit(text, (text_rect.x, text_rect.y))
+
+    levels = []
+
+    # prev_img = pygame.image.load("./prev_img.png").convert_alpha()
+    # prev_btn = Button(450, 670, prev_img, 1)
+
+    for i in range(1, 8):
+        levels.append(pygame.image.load(f"./level{i}.png").convert_alpha())
+
+    for i in range(1, 8):
+        lev_btn = Button(260, (140 + i * 80), levels[i - 1], 0.9)
+        if lev_btn.draw(screen):
+            draw_level(screen, f"./levels/{i}.csv")
+
+
+def main():
+    screen = pygame.display.set_mode((700, 800))
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        screen.fill((220, 220, 220))
+
+        draw_menu(screen)
+
+        pygame.display.update()
 
     sys.exit()
 
